@@ -146,6 +146,7 @@ function renderCard() {
 
   nextCardMedia.innerHTML = `<div class="ghost-image" style="background-image:url('${getImages(next)[0]}')"></div>`;
 
+  activeCard.classList.add('card-hidden');
   activeCard.classList.add('instant-reset');
   activeCard.classList.remove('swipe-out-left', 'swipe-out-right', 'swipe-return');
   activeCard.style.transform = 'translateX(0) rotate(0deg)';
@@ -154,7 +155,9 @@ function renderCard() {
   renderImage();
 
   window.requestAnimationFrame(() => {
-    activeCard.classList.remove('instant-reset');
+    window.requestAnimationFrame(() => {
+      activeCard.classList.remove('card-hidden', 'instant-reset');
+    });
   });
 }
 
