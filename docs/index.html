@@ -1,1 +1,176 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Troc'Etudiant</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="background-orb orb-one"></div>
+      <div class="background-orb orb-two"></div>
 
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">T'E</div>
+          <div>
+            <p>Troc'Etudiant</p>
+            <span>MVP web statique pour Steylab</span>
+          </div>
+        </div>
+
+        <nav class="topnav" aria-label="Navigation principale">
+          <button type="button" class="nav-link active" data-tab-target="home">Home</button>
+          <button type="button" class="nav-link" data-tab-target="ajouter">Ajouter</button>
+        </nav>
+      </header>
+
+      <main class="page-section">
+        <section class="tab-panel active" data-tab-panel="home">
+          <section class="hero">
+            <div>
+              <p class="eyebrow">Steylab x Lille</p>
+              <h1>Troc'Etudiant</h1>
+              <p class="hero-copy">
+                Des objets utiles, gratuits, à récupérer entre étudiants sans friction.
+              </p>
+            </div>
+            <div class="hero-badge">
+              <span>+120</span>
+              <p>objets sauvés du gaspillage ce mois-ci</p>
+            </div>
+          </section>
+
+          <section class="swipe-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Swipe</p>
+                <h2>Une seule annonce à la fois</h2>
+              </div>
+              <p class="section-copy">
+                Glisse la carte à gauche ou à droite comme sur une app de rencontre. Ici, le retour
+                arrière reste disponible.
+              </p>
+            </div>
+
+            <div class="swipe-layout">
+              <div class="swipe-deck" id="swipeDeck">
+                <article class="swipe-card swipe-card-back" aria-hidden="true">
+                  <div class="card-media swipe-media" id="nextCardMedia"></div>
+                </article>
+
+                <article class="swipe-card swipe-card-front" id="activeCard">
+                  <div class="card-media swipe-media">
+                    <img id="cardImage" alt="" />
+                    <span class="card-chip" id="cardQuartier"></span>
+                    <span class="swipe-step" id="cardStep"></span>
+                    <span class="swipe-feedback positive hidden" id="swipeLike">Intéressé</span>
+                    <span class="swipe-feedback negative hidden" id="swipePass">Passer</span>
+                  </div>
+
+                  <div class="card-content">
+                    <div class="card-topline">
+                      <span class="category-badge" id="cardCategorie"></span>
+                      <span class="state-badge" id="cardEtat"></span>
+                    </div>
+                    <h3 id="cardTitre"></h3>
+                    <p id="cardDescription"></p>
+                    <div class="details-row" id="cardDetails"></div>
+
+                    <div class="swipe-actions">
+                      <button type="button" class="secondary-button" id="backButton">Revenir</button>
+                      <button type="button" class="secondary-button" id="skipButton">Passer</button>
+                      <button type="button" class="primary-button" id="interestButton">Ça m'intéresse</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <aside class="swipe-sidepanel">
+                <h3>Infos utiles</h3>
+                <ul>
+                  <li>Une annonce visible à la fois.</li>
+                  <li>Swipe au doigt ou à la souris.</li>
+                  <li>Retour arrière autorisé.</li>
+                  <li>Détails type Vinted simplifié.</li>
+                </ul>
+              </aside>
+            </div>
+          </section>
+        </section>
+
+        <section class="tab-panel" data-tab-panel="ajouter">
+          <section class="form-layout">
+            <div class="form-intro">
+              <p class="eyebrow">Publier un don</p>
+              <h1>Une annonce simple mais riche en infos</h1>
+              <p>
+                Titre, catégorie, quartier, état, marque, taille et description. Tout reste en
+                front pour ce MVP statique.
+              </p>
+            </div>
+
+            <form class="donation-form" id="addForm">
+              <label class="field">
+                <span>Titre</span>
+                <input type="text" name="titre" placeholder="Ex: Veste, lampe, grille-pain..." required />
+              </label>
+
+              <div class="field">
+                <span>Catégorie</span>
+                <div class="chip-row" id="categoryChoices"></div>
+              </div>
+
+              <div class="dual-fields">
+                <label class="field">
+                  <span>Quartier</span>
+                  <select name="quartier" id="quartierSelect"></select>
+                </label>
+
+                <label class="field">
+                  <span>État</span>
+                  <select name="etat" id="etatSelect"></select>
+                </label>
+              </div>
+
+              <div class="dual-fields">
+                <label class="field">
+                  <span>Marque (optionnel)</span>
+                  <input type="text" name="marque" placeholder="Ex: Ikea, Nike, Samsung..." />
+                </label>
+
+                <label class="field">
+                  <span>Taille (optionnel)</span>
+                  <select name="taille" id="tailleSelect"></select>
+                </label>
+              </div>
+
+              <label class="field">
+                <span>Description</span>
+                <textarea
+                  name="description"
+                  rows="5"
+                  placeholder="État réel, dimensions, défauts éventuels, retrait sur Lille..."
+                  required
+                ></textarea>
+              </label>
+
+              <div class="field">
+                <span>Photo</span>
+                <button type="button" class="photo-dropzone" id="photoButton">
+                  <strong>+</strong>
+                  <p>Simuler l'ajout d'une photo</p>
+                </button>
+              </div>
+
+              <button type="submit" class="submit-button">Publier l'annonce</button>
+            </form>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+  </html>
