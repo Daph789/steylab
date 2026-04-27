@@ -1,7 +1,7 @@
 const quartiers = ['Moulins', 'Vauban', 'Vieux-Lille', 'Centre'];
 const categories = ['Maison', 'Mode', 'High-tech', 'Livres', 'Mobilier', 'Cuisine', 'Autre'];
 const etats = ['Comme neuf', 'Très bon état', 'Bon état', 'À réparer'];
-const tailles = ['Non précisée', 'XS', 'S', 'M', 'L', 'XL', 'Unique'];
+const tailles = ['XS', 'S', 'M', 'L', 'XL', 'Unique', '34', '36', '38', '40'];
 
 const baseAnnonces = [
   {
@@ -13,7 +13,10 @@ const baseAnnonces = [
     taille: 'Unique',
     etat: 'Très bon état',
     description: 'Lampe orientable pour bureau étudiant, faible consommation.',
-    image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: '2',
@@ -24,7 +27,10 @@ const baseAnnonces = [
     taille: 'Unique',
     etat: 'Bon état',
     description: 'Fonctionne bien, idéal pour studio, petite trace sur le côté.',
-    image: 'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: '3',
@@ -35,7 +41,10 @@ const baseAnnonces = [
     taille: 'Unique',
     etat: 'Comme neuf',
     description: 'Chaise confortable pour réviser, assise rembourrée, légère.',
-    image: 'https://images.unsplash.com/photo-1505843513577-22bb7d21e455?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1505843513577-22bb7d21e455?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
 ];
 
@@ -46,15 +55,20 @@ const annonces = Array.isArray(stored) && stored.length ? stored : baseAnnonces.
 let swipeIndex = 0;
 let history = [];
 let drag = { active: false, startX: 0, offsetX: 0 };
+let swipeLocked = false;
+let imageIndex = 0;
+let imageDrag = { active: false, startX: 0, offsetX: 0 };
 let selectedCategory = categories[0];
 
 const tabs = document.querySelectorAll('[data-tab-target]');
 const panels = document.querySelectorAll('[data-tab-panel]');
 const activeCard = document.getElementById('activeCard');
 const nextCardMedia = document.getElementById('nextCardMedia');
+const imageCarousel = document.getElementById('imageCarousel');
+const imageTrack = document.getElementById('imageTrack');
 
 const refs = {
-  image: document.getElementById('cardImage'),
+  imageCount: document.getElementById('imageCount'),
   quartier: document.getElementById('cardQuartier'),
   step: document.getElementById('cardStep'),
   categorie: document.getElementById('cardCategorie'),
@@ -64,6 +78,7 @@ const refs = {
   details: document.getElementById('cardDetails'),
   like: document.getElementById('swipeLike'),
   pass: document.getElementById('swipePass'),
+  dots: document.getElementById('imageDots'),
 };
 
 function saveAnnonces() {
@@ -86,12 +101,39 @@ function createDetail(label, value) {
   return pill;
 }
 
+function getImages(annonce) {
+  if (Array.isArray(annonce.images) && annonce.images.length) return annonce.images;
+  if (annonce.image) return [annonce.image];
+  return [];
+}
+
+function renderImage() {
+  const current = annonces[swipeIndex];
+  const images = getImages(current);
+  const safeIndex = ((imageIndex % images.length) + images.length) % images.length;
+  imageIndex = safeIndex;
+  imageTrack.classList.remove('dragging');
+  imageTrack.innerHTML = images
+    .map(
+      (src, idx) =>
+        `<img class="image-slide" src="${src}" alt="${current.titre} - image ${idx + 1}" draggable="false" />`
+    )
+    .join('');
+  imageTrack.style.transform = `translateX(-${safeIndex * 100}%)`;
+  refs.imageCount.textContent = `${safeIndex + 1}/${images.length}`;
+  refs.dots.innerHTML = '';
+  images.forEach((_, idx) => {
+    const dot = document.createElement('span');
+    dot.className = `image-dot${idx === safeIndex ? ' active' : ''}`;
+    refs.dots.append(dot);
+  });
+}
+
 function renderCard() {
   const current = annonces[swipeIndex];
   const next = annonces[(swipeIndex + 1) % annonces.length];
 
-  refs.image.src = current.image;
-  refs.image.alt = current.titre;
+  imageIndex = 0;
   refs.quartier.textContent = current.quartier;
   refs.step.textContent = `${swipeIndex + 1} / ${annonces.length}`;
   refs.categorie.textContent = current.categorie;
@@ -102,11 +144,18 @@ function renderCard() {
   refs.details.append(createDetail('Marque', current.marque));
   refs.details.append(createDetail('Taille', current.taille));
 
-  nextCardMedia.innerHTML = `<div class="ghost-image" style="background-image:url('${next.image}')"></div>`;
+  nextCardMedia.innerHTML = `<div class="ghost-image" style="background-image:url('${getImages(next)[0]}')"></div>`;
 
+  activeCard.classList.add('instant-reset');
+  activeCard.classList.remove('swipe-out-left', 'swipe-out-right', 'swipe-return');
   activeCard.style.transform = 'translateX(0) rotate(0deg)';
   refs.like.classList.add('hidden');
   refs.pass.classList.add('hidden');
+  renderImage();
+
+  window.requestAnimationFrame(() => {
+    activeCard.classList.remove('instant-reset');
+  });
 }
 
 function goNext() {
@@ -133,8 +182,11 @@ document.getElementById('photoButton').addEventListener('click', () => {
 });
 
 activeCard.addEventListener('pointerdown', (event) => {
+  if (event.target.closest('.image-carousel')) return;
+  if (swipeLocked) return;
   drag = { active: true, startX: event.clientX, offsetX: 0 };
   activeCard.setPointerCapture(event.pointerId);
+  activeCard.classList.remove('swipe-return');
 });
 
 activeCard.addEventListener('pointermove', (event) => {
@@ -151,10 +203,20 @@ function releaseSwipe(event) {
   activeCard.releasePointerCapture(event.pointerId);
 
   if (Math.abs(drag.offsetX) > 120) {
-    goNext();
+    swipeLocked = true;
+    const direction = drag.offsetX > 0 ? 'right' : 'left';
+    activeCard.classList.remove('swipe-return');
+    activeCard.classList.add(direction === 'right' ? 'swipe-out-right' : 'swipe-out-left');
+
+    window.setTimeout(() => {
+      goNext();
+      swipeLocked = false;
+    }, 320);
     return;
   }
 
+  activeCard.classList.remove('swipe-out-left', 'swipe-out-right');
+  activeCard.classList.add('swipe-return');
   activeCard.style.transform = 'translateX(0) rotate(0deg)';
   refs.like.classList.add('hidden');
   refs.pass.classList.add('hidden');
@@ -162,6 +224,64 @@ function releaseSwipe(event) {
 
 activeCard.addEventListener('pointerup', releaseSwipe);
 activeCard.addEventListener('pointercancel', releaseSwipe);
+
+function nextImage() {
+  const images = getImages(annonces[swipeIndex]);
+  if (images.length < 2) return;
+  imageIndex = (imageIndex + 1) % images.length;
+  renderImage();
+}
+
+function previousImage() {
+  const images = getImages(annonces[swipeIndex]);
+  if (images.length < 2) return;
+  imageIndex = (imageIndex - 1 + images.length) % images.length;
+  renderImage();
+}
+
+document.getElementById('imageNext').addEventListener('click', (event) => {
+  event.stopPropagation();
+  nextImage();
+});
+
+document.getElementById('imagePrev').addEventListener('click', (event) => {
+  event.stopPropagation();
+  previousImage();
+});
+
+imageCarousel.addEventListener('pointerdown', (event) => {
+  if (swipeLocked) return;
+  imageDrag = { active: true, startX: event.clientX, offsetX: 0 };
+  imageCarousel.setPointerCapture(event.pointerId);
+  imageTrack.classList.add('dragging');
+  event.stopPropagation();
+});
+
+imageCarousel.addEventListener('pointermove', (event) => {
+  if (!imageDrag.active) return;
+  imageDrag.offsetX = event.clientX - imageDrag.startX;
+  const width = imageCarousel.clientWidth || 1;
+  const translate = (-imageIndex * width) + imageDrag.offsetX;
+  imageTrack.style.transform = `translateX(${translate}px)`;
+  event.stopPropagation();
+});
+
+function releaseImageSwipe(event) {
+  if (!imageDrag.active) return;
+  imageDrag.active = false;
+  imageCarousel.releasePointerCapture(event.pointerId);
+  imageTrack.classList.remove('dragging');
+  if (Math.abs(imageDrag.offsetX) > 60) {
+    if (imageDrag.offsetX < 0) nextImage();
+    else previousImage();
+  } else {
+    renderImage();
+  }
+  event.stopPropagation();
+}
+
+imageCarousel.addEventListener('pointerup', releaseImageSwipe);
+imageCarousel.addEventListener('pointercancel', releaseImageSwipe);
 
 function fillSelect(id, values) {
   const select = document.getElementById(id);
@@ -190,23 +310,35 @@ function renderCategoryChoices() {
 
 fillSelect('quartierSelect', quartiers);
 fillSelect('etatSelect', etats);
-fillSelect('tailleSelect', tailles);
+document.getElementById('tailleSuggestions').innerHTML = tailles
+  .map((value) => `<option value="${value}"></option>`)
+  .join('');
 renderCategoryChoices();
 
 document.getElementById('addForm').addEventListener('submit', (event) => {
   event.preventDefault();
 
   const formData = new FormData(event.currentTarget);
+  const photos = String(formData.get('photos') || '')
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
   const annonce = {
     id: String(Date.now()),
     titre: formData.get('titre').trim(),
     categorie: selectedCategory,
     quartier: formData.get('quartier'),
     marque: formData.get('marque').trim(),
-    taille: formData.get('taille'),
+    taille: formData.get('taille').trim(),
     etat: formData.get('etat'),
     description: formData.get('description').trim(),
-    image: 'https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=80',
+    images: photos.length
+      ? photos
+      : [
+          'https://images.unsplash.com/photo-1517705008128-361805f42e86?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1484101403633-562f891dc89a?auto=format&fit=crop&w=1200&q=80',
+        ],
   };
 
   annonces.unshift(annonce);

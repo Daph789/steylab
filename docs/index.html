@@ -61,10 +61,14 @@
                 </article>
 
                 <article class="swipe-card swipe-card-front" id="activeCard">
-                  <div class="card-media swipe-media">
-                    <img id="cardImage" alt="" />
+                  <div class="card-media swipe-media image-carousel" id="imageCarousel">
+                    <div class="image-track" id="imageTrack"></div>
+                    <button type="button" class="image-nav prev" id="imagePrev" aria-label="Image précédente">‹</button>
+                    <button type="button" class="image-nav next" id="imageNext" aria-label="Image suivante">›</button>
+                    <div class="image-dots" id="imageDots"></div>
                     <span class="card-chip" id="cardQuartier"></span>
-                    <span class="swipe-step" id="cardStep"></span>
+                    <span class="image-count" id="imageCount"></span>
+                    <span class="card-progress" id="cardStep"></span>
                     <span class="swipe-feedback positive hidden" id="swipeLike">Intéressé</span>
                     <span class="swipe-feedback negative hidden" id="swipePass">Passer</span>
                   </div>
@@ -142,7 +146,8 @@
 
                 <label class="field">
                   <span>Taille (optionnel)</span>
-                  <select name="taille" id="tailleSelect"></select>
+                  <input type="text" name="taille" id="tailleInput" list="tailleSuggestions" placeholder="Ex: M, 38, 120x60 cm..." />
+                  <datalist id="tailleSuggestions"></datalist>
                 </label>
               </div>
 
@@ -160,9 +165,18 @@
                 <span>Photo</span>
                 <button type="button" class="photo-dropzone" id="photoButton">
                   <strong>+</strong>
-                  <p>Simuler l'ajout d'une photo</p>
+                  <p>Simuler l'ajout de plusieurs photos</p>
                 </button>
               </div>
+
+              <label class="field">
+                <span>Liens photo (optionnel, un lien par ligne)</span>
+                <textarea
+                  name="photos"
+                  rows="4"
+                  placeholder="https://...&#10;https://...&#10;https://..."
+                ></textarea>
+              </label>
 
               <button type="submit" class="submit-button">Publier l'annonce</button>
             </form>
